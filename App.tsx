@@ -1,7 +1,13 @@
 import { Suspense, useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { Canvas } from '@react-three/fiber/native';
-import { useGLTF } from '@react-three/drei/native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Canvas, RootState } from '@react-three/fiber/native';
+import { Environment, OrbitControls, useGLTF } from '@react-three/drei/native';
 import { PrimitiveProps } from '@react-three/fiber/dist/declarations/src/three-types'; //0.2 480KB works
 
 // Models can be downloaded from the collection of The Smithsonian
@@ -29,11 +35,11 @@ type ModelInfo = {
 };
 
 const modelPaths: Array<ModelInfo> = [
-  { path: bustPath, scale: 0.005, weight: '16.5 MB', name: 'Bust' },
+  { path: gunPath, scale: 0.3, weight: '480 KB', name: 'Gun' },
   { path: bombPath, scale: 0.1, weight: '4.7 MB', name: 'Bomb' },
-  { path: maiPath, scale: 0.05, weight: '16.4 MB', name: 'Mai' },
-  { path: gunPath, scale: 0.1, weight: '480 KB', name: 'Gun' },
   { path: wheelPath, scale: 1.6, weight: '5.7 MB', name: 'Wheel' },
+  { path: maiPath, scale: 0.04, weight: '16.4 MB', name: 'Mai' },
+  { path: bustPath, scale: 0.004, weight: '16.5 MB', name: 'Bust' },
 ];
 
 function Model({ modelPath, scale = 1, ...props }: ModelProps) {
@@ -42,57 +48,67 @@ function Model({ modelPath, scale = 1, ...props }: ModelProps) {
 }
 
 export default function App() {
-  const [model, setModel] = useState(modelPaths[4]);
+  const [model, setModel] = useState<ModelInfo>(modelPaths[0]);
+
+  const renderItem = ({ item }: { item: ModelInfo }) => (
+    <TouchableOpacity style={styles.button} onPress={() => setModel(item)}>
+      <Text>{item.name}</Text>
+      <Text>{item.weight}</Text>
+    </TouchableOpacity>
+  );
+
+  const onCreated = (state: RootState) => {
+    const _gl = state.gl.getContext();
+    const pixelStorei = _gl.pixelStorei.bind(_gl);
+    _gl.pixelStorei = function (...args) {
+      const [parameter] = args;
+      switch (parameter) {
+        case _gl.UNPACK_FLIP_Y_WEBGL:
+          return pixelStorei(...args);
+      }
+    };
+  };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Canvas
-        onCreated={state => {
-          const _gl = state.gl.getContext();
-          const pixelStorei = _gl.pixelStorei.bind(_gl);
-          _gl.pixelStorei = function (...args) {
-            const [parameter] = args;
-            switch (parameter) {
-              case _gl.UNPACK_FLIP_Y_WEBGL:
-                return pixelStorei(...args);
-            }
-          };
-        }}
-      >
+    <View style={styles.flex}>
+      <Canvas onCreated={onCreated}>
+        <OrbitControls />
         <ambientLight />
         <Suspense>
           <Model modelPath={model.path} scale={model.scale} />
+          <Environment preset={'sunset'} />
         </Suspense>
       </Canvas>
       <FlatList
         data={modelPaths}
-        style={{
-          maxHeight: 90,
-          backgroundColor: 'lightgreen',
-        }}
-        contentContainerStyle={{
-          alignContent: 'center',
-          justifyContent: 'space-around',
-          padding: 20,
-          width: '100%',
-          gap: 30,
-          backgroundColor: 'blue',
-        }}
+        style={styles.buttons}
+        contentContainerStyle={styles.models}
         horizontal
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={{
-              alignItems: 'center',
-              backgroundColor: 'white',
-              padding: 10,
-            }}
-            onPress={() => setModel(item)}
-          >
-            <Text>{item.name}</Text>
-            <Text>{item.weight}</Text>
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  button: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 10,
+  },
+  buttons: {
+    maxHeight: 90,
+    backgroundColor: 'lightgreen',
+  },
+  models: {
+    alignContent: 'center',
+    justifyContent: 'space-around',
+    padding: 20,
+    width: '100%',
+    gap: 30,
+    backgroundColor: 'blue',
+  },
+});
