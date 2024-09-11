@@ -100,15 +100,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   buttons: {
-    maxHeight: 90,
+    maxHeight: 80,
     backgroundColor: 'lightgreen',
   },
   models: {
     alignContent: 'center',
     justifyContent: 'space-around',
-    padding: 20,
+    padding: 10,
     width: '100%',
-    gap: 30,
     backgroundColor: 'blue',
   },
 });
