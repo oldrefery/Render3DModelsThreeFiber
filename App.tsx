@@ -15,6 +15,7 @@ import { PrimitiveProps } from '@react-three/fiber/dist/declarations/src/three-t
 
 import bustPath from './assets/models/bust.glb'; // 16.5MB works, 0.005
 import bombPath from './assets/models/bomb.glb'; // 4.7Mb works, scale 0.1
+import scanPath from './assets/models/scan.glb'; // 4.7Mb works, scale 0.1
 import maiPath from './assets/models/mai.glb'; // 16.4Mb works, scale 0.05
 import gunPath from './assets/models/gun.glb'; // 480 KB, scale: 0.1
 import wheelPath from './assets/models/wheel.glb'; //0.1 5.7MB works
@@ -36,6 +37,7 @@ type ModelInfo = {
 
 const modelPaths: Array<ModelInfo> = [
   { path: gunPath, scale: 0.3, weight: '480 KB', name: 'Gun' },
+  { path: scanPath, scale: 1, weight: '4.3 MB', name: 'Scan' },
   { path: bombPath, scale: 0.1, weight: '4.7 MB', name: 'Bomb' },
   { path: wheelPath, scale: 1.6, weight: '5.7 MB', name: 'Wheel' },
   { path: maiPath, scale: 0.04, weight: '16.4 MB', name: 'Mai' },
@@ -44,7 +46,7 @@ const modelPaths: Array<ModelInfo> = [
 
 function Model({ modelPath, scale = 1, ...props }: ModelProps) {
   const gltf = useGLTF(modelPath);
-  return <primitive {...props} object={gltf.scene} scale={scale} />;
+  return <primitive {...props} object={gltf.scene} />;
 }
 
 export default function App() {
